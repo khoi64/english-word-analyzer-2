@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sổ Tay Từ Vựng — Tra từ &amp; Ôn luyện</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f2e9;
+    --rule:#dcd3bf;
+    --ink:#1e2a3a;
+    --ink-soft:#4b5768;
+    --jade:#2f6f5e;
+    --jade-soft:#e4efe9;
+    --clay:#b5542f;
+    --card:#fffdf8;
+    --error:#a8402b;
+    --good:#2f6f5e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 2.1em;
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+  header{margin-bottom:2rem;}
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.75rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--jade);
+    margin:0 0 0.4rem;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:2.4rem;
+    margin:0 0 0.3rem;
+    line-height:1.1;
+  }
+  .sub{color:var(--ink-soft);font-size:0.95rem;max-width:48ch;}
+
+  nav.tabs{display:flex;gap:0.5rem;margin:2rem 0 1.5rem;border-bottom:1px solid var(--rule);}
+  nav.tabs button{
+    background:none;border:none;cursor:pointer;
+    font-family:'Work Sans',sans-serif;font-size:0.95rem;font-weight:600;
+    color:var(--ink-soft);padding:0.6rem 0.2rem;margin-right:1.5rem;
+    border-bottom:2px solid transparent;
+  }
+  nav.tabs button.active{color:var(--ink);border-bottom-color:var(--clay);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  form.lookup{display:flex;gap:0.6rem;margin-bottom:1.5rem;}
+  input[type=text]{
+    flex:1;padding:0.75rem 0.9rem;border:1px solid var(--rule);border-radius:6px;
+    background:var(--card);font-size:1rem;font-family:'Work Sans',sans-serif;color:var(--ink);
+  }
+  input[type=text]:focus{outline:2px solid var(--jade);outline-offset:1px;}
+  button.primary{
+    background:var(--ink);color:var(--paper);border:none;border-radius:6px;
+    padding:0.75rem 1.3rem;font-weight:600;cursor:pointer;font-size:0.95rem;
+  }
+  button.primary:hover{background:var(--jade);}
+  button.primary:disabled{opacity:0.5;cursor:wait;}
+
+  .status{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--ink-soft);min-height:1.4em;margin-bottom:1rem;}
+  .status.error{color:var(--error);}
+
+  .entry-card{
+    background:var(--card);border:1px solid var(--rule);border-radius:10px;
+    padding:1.6rem 1.7rem;margin-bottom:1.5rem;
+  }
+  .entry-head{display:flex;align-items:baseline;gap:0.7rem;flex-wrap:wrap;margin-bottom:0.3rem;}
+  .headword{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:600;}
+  .phonetic{font-family:'JetBrains Mono',monospace;color:var(--jade);font-size:0.95rem;}
+  .translation{
+    font-size:1.15rem;color:var(--clay);font-weight:600;margin-bottom:1.1rem;
+  }
+  .pos-block{margin-bottom:1rem;}
+  .pos-tag{
+    display:inline-block;font-family:'JetBrains Mono',monospace;font-size:0.72rem;
+    text-transform:uppercase;letter-spacing:0.06em;background:var(--jade-soft);color:var(--jade);
+    padding:0.2rem 0.55rem;border-radius:4px;margin-bottom:0.4rem;
+  }
+  .pos-block ul{margin:0.3rem 0 0;padding-left:1.2rem;color:var(--ink-soft);font-size:0.92rem;}
+  .pos-block li{margin-bottom:0.25rem;}
+
+  .history{margin-top:2rem;}
+  .history h3{font-family:'Fraunces',serif;font-size:1.1rem;margin-bottom:0.6rem;font-weight:600;}
+  .chips{display:flex;flex-wrap:wrap;gap:0.5rem;}
+  .chip{
+    font-family:'JetBrains Mono',monospace;font-size:0.8rem;background:var(--card);
+    border:1px solid var(--rule);border-radius:20px;padding:0.35rem 0.8rem;cursor:pointer;color:var(--ink);
+  }
+  .chip:hover{border-color:var(--jade);color:var(--jade);}
+
+  .quiz-empty{
+    background:var(--card);border:1px dashed var(--rule);border-radius:10px;
+    padding:2rem;text-align:center;color:var(--ink-soft);font-size:0.95rem;
+  }
+  .quiz-empty strong{color:var(--ink);}
+
+  .q-card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1.5rem 1.6rem;margin-bottom:1.2rem;}
+  .q-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .q-prompt{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;margin-bottom:1rem;}
+  .options{display:grid;gap:0.55rem;}
+  .option{
+    text-align:left;border:1px solid var(--rule);background:var(--paper);
+    padding:0.65rem 0.9rem;border-radius:7px;cursor:pointer;font-size:0.95rem;font-family:'Work Sans',sans-serif;color:var(--ink);
+  }
+  .option:hover{border-color:var(--jade);}
+  .option.correct{background:var(--jade-soft);border-color:var(--jade);color:var(--jade);font-weight:600;}
+  .option.wrong{background:#f6e4df;border-color:var(--error);color:var(--error);font-weight:600;}
+  .option:disabled{cursor:default;}
+
+  .quiz-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;}
+  .score{
+    font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--ink-soft);
+    background:var(--card);border:1px solid var(--rule);padding:0.4rem 0.8rem;border-radius:6px;
+  }
+  footer{margin-top:3rem;font-size:0.8rem;color:var(--ink-soft);border-top:1px solid var(--rule);padding-top:1rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">English → Tiếng Việt · Từ loại · Ôn luyện</p>
+    <h1>Sổ Tay Từ Vựng</h1>
+    <p class="sub">Tra một từ tiếng Anh để xem nghĩa tiếng Việt và từ loại (danh từ, động từ, tính từ, trạng từ...). Mỗi từ tra xong sẽ được lưu lại để tạo câu hỏi ôn luyện trắc nghiệm.</p>
+  </header>
+
+  <nav class="tabs">
+    <button id="tabLookupBtn" class="active">Tra từ</button>
+    <button id="tabQuizBtn">Ôn luyện</button>
+  </nav>
+
+  <section id="panelLookup" class="panel active">
+    <form class="lookup" id="lookupForm">
+      <input type="text" id="wordInput" placeholder="Nhập một từ tiếng Anh, ví dụ: run" autocomplete="off">
+      <button class="primary" type="submit" id="lookupBtn">Tra từ</button>
+    </form>
+    <p class="status" id="statusLine"></p>
+    <div id="resultArea"></div>
+
+    <div class="history">
+      <h3>Đã tra (<span id="historyCount">0</span>)</h3>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+
+  <section id="panelQuiz" class="panel">
+    <div id="quizArea"></div>
+  </section>
+
+  <footer>Nguồn dữ liệu: dictionaryapi.dev (từ điển &amp; từ loại) và MyMemory (dịch). Dữ liệu lưu trong trình duyệt của bạn (localStorage) — không có máy chủ backend.</footer>
+</div>
+
+<script>
+const POS_VI = {
+  noun: 'Danh từ', verb: 'Động từ', adjective: 'Tính từ', adverb: 'Trạng từ',
+  pronoun: 'Đại từ', preposition: 'Giới từ', conjunction: 'Liên từ',
+  interjection: 'Thán từ', determiner: 'Từ hạn định', exclamation: 'Thán từ',
+  numeral: 'Số từ', article: 'Mạo từ'
+};
+const POS_OPTIONS_POOL = ['Danh từ','Động từ','Tính từ','Trạng từ','Đại từ','Giới từ'];
+
+const $ = (sel) => document.querySelector(sel);
+const statusLine = $('#statusLine');
+const resultArea = $('#resultArea');
+const chipsEl = $('#chips');
+const historyCountEl = $('#historyCount');
+
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem('vocabHistory') || '[]'); }
+  catch(e){ return []; }
+}
+function saveHistory(list){
+  localStorage.setItem('vocabHistory', JSON.stringify(list));
+}
+function upsertHistory(entry){
+  const list = loadHistory().filter(e => e.word !== entry.word);
+  list.unshift(entry);
+  saveHistory(list.slice(0, 60)); // cap history size
+  renderChips();
+}
+function renderChips(){
+  const list = loadHistory();
+  historyCountEl.textContent = list.length;
+  chipsEl.innerHTML = '';
+  list.forEach(e => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.type = 'button';
+    b.textContent = e.word;
+    b.onclick = () => { $('#wordInput').value = e.word; renderEntry(e); };
+    chipsEl.appendChild(b);
+  });
+}
+
+async function fetchDictionary(word){
+  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+  if(!res.ok) throw new Error('not_found');
+  const data = await res.json();
+  return data[0];
+}
+
+async function fetchTranslation(word){
+  const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|vi`);
+  if(!res.ok) throw new Error('translate_failed');
+  const data = await res.json();
+  return data?.responseData?.translatedText || '';
+}
+
+function renderEntry(entry){
+  const posBlocks = entry.meanings.map(m => `
+    <div class="pos-block">
+      <span class="pos-tag">${m.posVi}</span>
+      <ul>
+        ${m.definitions.slice(0,2).map(d => `<li>${d}</li>`).join('')}
+      </ul>
+    </div>`).join('');
+
+  resultArea.innerHTML = `
+    <div class="entry-card">
+      <div class="entry-head">
+        <span class="headword">${entry.word}</span>
+        ${entry.phonetic ? `<span class="phonetic">${entry.phonetic}</span>` : ''}
+      </div>
+      <div class="translation">${entry.translation || '(không có bản dịch)'}</div>
+      ${posBlocks}
+    </div>`;
+}
+
+$('#lookupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const raw = $('#wordInput').value.trim().toLowerCase();
+  if(!raw) return;
+  const btn = $('#lookupBtn');
+  btn.disabled = true;
+  statusLine.className = 'status';
+  statusLine.textContent = `Đang tra "${raw}"...`;
+  resultArea.innerHTML = '';
+
+  try{
+    const [dictRaw, translation] = await Promise.all([
+      fetchDictionary(raw).catch(() => null),
+      fetchTranslation(raw).catch(() => '')
+    ]);
+
+    if(!dictRaw){
+      statusLine.className = 'status error';
+      statusLine.textContent = `Không tìm thấy "${raw}" trong từ điển. Kiểm tra chính tả hoặc thử một từ khác.`;
+      btn.disabled = false;
+      return;
+    }
+
+    // De-dupe part-of-speech blocks, cap 3 definitions per POS shown as 2
+    const seenPos = new Set();
+    const meanings = dictRaw.meanings
+      .filter(m => { if(seenPos.has(m.partOfSpeech)) return false; seenPos.add(m.partOfSpeech); return true; })
+      .map(m => ({
+        posVi: POS_VI[m.partOfSpeech] || m.partOfSpeech,
+        definitions: m.definitions.map(d => d.definition)
+      }));
+
+    const entry = {
+      word: dictRaw.word,
+      phonetic: dictRaw.phonetic || (dictRaw.phonetics.find(p => p.text)?.text) || '',
+      translation,
+      meanings,
+      ts: Date.now()
+    };
+
+    renderEntry(entry);
+    upsertHistory(entry);
+    statusLine.textContent = '';
+  } catch(err){
+    statusLine.className = 'status error';
+    statusLine.textContent = 'Có lỗi khi tra từ. Kiểm tra kết nối mạng và thử lại.';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---- Tabs ----
+$('#tabLookupBtn').addEventListener('click', () => switchTab('lookup'));
+$('#tabQuizBtn').addEventListener('click', () => switchTab('quiz'));
+function switchTab(name){
+  $('#tabLookupBtn').classList.toggle('active', name === 'lookup');
+  $('#tabQuizBtn').classList.toggle('active', name === 'quiz');
+  $('#panelLookup').classList.toggle('active', name === 'lookup');
+  $('#panelQuiz').classList.toggle('active', name === 'quiz');
+  if(name === 'quiz') buildQuizScreen();
+}
+
+// ---- Quiz ----
+function shuffle(arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildQuizScreen(){
+  const history = loadHistory();
+  const quizArea = $('#quizArea');
+  if(history.length < 4){
+    quizArea.innerHTML = `<div class="quiz-empty">Cần tra ít nhất <strong>4 từ khác nhau</strong> ở tab "Tra từ" trước đã. Hiện có ${history.length} từ.</div>`;
+    return;
+  }
+  quizArea.innerHTML = `
+    <div class="quiz-actions">
+      <button class="primary" id="genQuizBtn">Tạo 5 câu hỏi mới</button>
+      <span class="score" id="scoreLine"></span>
+    </div>
+    <div id="questionsWrap"></div>`;
+  $('#genQuizBtn').addEventListener('click', () => renderQuiz(history));
+  renderQuiz(history);
+}
+
+function makeQuestion(history, usedWords){
+  const pool = history.filter(w => !usedWords.has(w.word));
+  const source = pool.length ? pool : history;
+  const target = source[Math.floor(Math.random() * source.length)];
+  usedWords.add(target.word);
+
+  const kind = Math.random() < 0.5 ? 'translation' : 'pos';
+
+  if(kind === 'translation' && target.translation){
+    const distractors = shuffle(history.filter(w => w.word !== target.word && w.translation))
+      .slice(0, 3).map(w => w.translation);
+    if(distractors.length === 3){
+      return {
+        prompt: `Từ "${target.word}" có nghĩa tiếng Việt là gì?`,
+        eyebrow: 'Nghĩa của từ',
+        options: shuffle([target.translation, ...distractors]),
+        answer: target.translation
+      };
+    }
+  }
+
+  // fallback / pos question
+  const correctPos = target.meanings[0]?.posVi || 'Danh từ';
+  const distractorsPos = shuffle(POS_OPTIONS_POOL.filter(p => p !== correctPos)).slice(0, 3);
+  return {
+    prompt: `"${target.word}" thuộc từ loại nào?`,
+    eyebrow: 'Từ loại',
+    options: shuffle([correctPos, ...distractorsPos]),
+    answer: correctPos
+  };
+}
+
+let quizState = { total: 0, correct: 0 };
+
+function renderQuiz(history){
+  quizState = { total: 0, correct: 0 };
+  updateScoreLine();
+  const usedWords = new Set();
+  const questions = [];
+  for(let i = 0; i < 5; i++){
+    questions.push(makeQuestion(history, usedWords));
+  }
+  const wrap = $('#questionsWrap');
+  wrap.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.innerHTML = `
+      <div class="q-eyebrow">Câu ${idx+1} · ${q.eyebrow}</div>
+      <div class="q-prompt">${q.prompt}</div>
+      <div class="options">
+        ${q.options.map(opt => `<button type="button" class="option" data-answer="${encodeURIComponent(opt)}">${opt}</button>`).join('')}
+      </div>`;
+    wrap.appendChild(card);
+
+    card.querySelectorAll('.option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chosen = decodeURIComponent(btn.dataset.answer);
+        const options = card.querySelectorAll('.option');
+        options.forEach(o => o.disabled = true);
+        if(chosen === q.answer){
+          btn.classList.add('correct');
+          quizState.correct++;
+        } else {
+          btn.classList.add('wrong');
+          options.forEach(o => {
+            if(decodeURIComponent(o.dataset.answer) === q.answer) o.classList.add('correct');
+          });
+        }
+        quizState.total++;
+        updateScoreLine();
+      });
+    });
+  });
+}
+
+function updateScoreLine(){
+  $('#scoreLine').textContent = `Điểm: ${quizState.correct}/${quizState.total || 5}`;
+}
+
+// ---- init ----
+renderChips();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sổ Tay Từ Vựng — Tra từ &amp; Ôn luyện</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f2e9;
+    --rule:#dcd3bf;
+    --ink:#1e2a3a;
+    --ink-soft:#4b5768;
+    --jade:#2f6f5e;
+    --jade-soft:#e4efe9;
+    --clay:#b5542f;
+    --card:#fffdf8;
+    --error:#a8402b;
+    --good:#2f6f5e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 2.1em;
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+  header{margin-bottom:2rem;}
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.75rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--jade);
+    margin:0 0 0.4rem;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:2.4rem;
+    margin:0 0 0.3rem;
+    line-height:1.1;
+  }
+  .sub{color:var(--ink-soft);font-size:0.95rem;max-width:48ch;}
+
+  nav.tabs{display:flex;gap:0.5rem;margin:2rem 0 1.5rem;border-bottom:1px solid var(--rule);}
+  nav.tabs button{
+    background:none;border:none;cursor:pointer;
+    font-family:'Work Sans',sans-serif;font-size:0.95rem;font-weight:600;
+    color:var(--ink-soft);padding:0.6rem 0.2rem;margin-right:1.5rem;
+    border-bottom:2px solid transparent;
+  }
+  nav.tabs button.active{color:var(--ink);border-bottom-color:var(--clay);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  form.lookup{display:flex;gap:0.6rem;margin-bottom:1.5rem;}
+  input[type=text]{
+    flex:1;padding:0.75rem 0.9rem;border:1px solid var(--rule);border-radius:6px;
+    background:var(--card);font-size:1rem;font-family:'Work Sans',sans-serif;color:var(--ink);
+  }
+  input[type=text]:focus{outline:2px solid var(--jade);outline-offset:1px;}
+  button.primary{
+    background:var(--ink);color:var(--paper);border:none;border-radius:6px;
+    padding:0.75rem 1.3rem;font-weight:600;cursor:pointer;font-size:0.95rem;
+  }
+  button.primary:hover{background:var(--jade);}
+  button.primary:disabled{opacity:0.5;cursor:wait;}
+
+  .status{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--ink-soft);min-height:1.4em;margin-bottom:1rem;}
+  .status.error{color:var(--error);}
+
+  .entry-card{
+    background:var(--card);border:1px solid var(--rule);border-radius:10px;
+    padding:1.6rem 1.7rem;margin-bottom:1.5rem;
+  }
+  .entry-head{display:flex;align-items:baseline;gap:0.7rem;flex-wrap:wrap;margin-bottom:0.3rem;}
+  .headword{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:600;}
+  .phonetic{font-family:'JetBrains Mono',monospace;color:var(--jade);font-size:0.95rem;}
+  .translation{
+    font-size:1.15rem;color:var(--clay);font-weight:600;margin-bottom:1.1rem;
+  }
+  .pos-block{margin-bottom:1rem;}
+  .pos-tag{
+    display:inline-block;font-family:'JetBrains Mono',monospace;font-size:0.72rem;
+    text-transform:uppercase;letter-spacing:0.06em;background:var(--jade-soft);color:var(--jade);
+    padding:0.2rem 0.55rem;border-radius:4px;margin-bottom:0.4rem;
+  }
+  .pos-block ul{margin:0.3rem 0 0;padding-left:1.2rem;color:var(--ink-soft);font-size:0.92rem;}
+  .pos-block li{margin-bottom:0.25rem;}
+
+  .history{margin-top:2rem;}
+  .history h3{font-family:'Fraunces',serif;font-size:1.1rem;margin-bottom:0.6rem;font-weight:600;}
+  .chips{display:flex;flex-wrap:wrap;gap:0.5rem;}
+  .chip{
+    font-family:'JetBrains Mono',monospace;font-size:0.8rem;background:var(--card);
+    border:1px solid var(--rule);border-radius:20px;padding:0.35rem 0.8rem;cursor:pointer;color:var(--ink);
+  }
+  .chip:hover{border-color:var(--jade);color:var(--jade);}
+
+  .quiz-empty{
+    background:var(--card);border:1px dashed var(--rule);border-radius:10px;
+    padding:2rem;text-align:center;color:var(--ink-soft);font-size:0.95rem;
+  }
+  .quiz-empty strong{color:var(--ink);}
+
+  .q-card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1.5rem 1.6rem;margin-bottom:1.2rem;}
+  .q-eyebrow{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .q-prompt{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;margin-bottom:1rem;}
+  .options{display:grid;gap:0.55rem;}
+  .option{
+    text-align:left;border:1px solid var(--rule);background:var(--paper);
+    padding:0.65rem 0.9rem;border-radius:7px;cursor:pointer;font-size:0.95rem;font-family:'Work Sans',sans-serif;color:var(--ink);
+  }
+  .option:hover{border-color:var(--jade);}
+  .option.correct{background:var(--jade-soft);border-color:var(--jade);color:var(--jade);font-weight:600;}
+  .option.wrong{background:#f6e4df;border-color:var(--error);color:var(--error);font-weight:600;}
+  .option:disabled{cursor:default;}
+
+  .quiz-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;}
+  .score{
+    font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--ink-soft);
+    background:var(--card);border:1px solid var(--rule);padding:0.4rem 0.8rem;border-radius:6px;
+  }
+  footer{margin-top:3rem;font-size:0.8rem;color:var(--ink-soft);border-top:1px solid var(--rule);padding-top:1rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">English → Tiếng Việt · Từ loại · Ôn luyện</p>
+    <h1>Sổ Tay Từ Vựng</h1>
+    <p class="sub">Tra một từ tiếng Anh để xem nghĩa tiếng Việt và từ loại (danh từ, động từ, tính từ, trạng từ...). Mỗi từ tra xong sẽ được lưu lại để tạo câu hỏi ôn luyện trắc nghiệm.</p>
+  </header>
+
+  <nav class="tabs">
+    <button id="tabLookupBtn" class="active">Tra từ</button>
+    <button id="tabQuizBtn">Ôn luyện</button>
+  </nav>
+
+  <section id="panelLookup" class="panel active">
+    <form class="lookup" id="lookupForm">
+      <input type="text" id="wordInput" placeholder="Nhập một từ tiếng Anh, ví dụ: run" autocomplete="off">
+      <button class="primary" type="submit" id="lookupBtn">Tra từ</button>
+    </form>
+    <p class="status" id="statusLine"></p>
+    <div id="resultArea"></div>
+
+    <div class="history">
+      <h3>Đã tra (<span id="historyCount">0</span>)</h3>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+
+  <section id="panelQuiz" class="panel">
+    <div id="quizArea"></div>
+  </section>
+
+  <footer>Nguồn dữ liệu: dictionaryapi.dev (từ điển &amp; từ loại) và MyMemory (dịch). Dữ liệu lưu trong trình duyệt của bạn (localStorage) — không có máy chủ backend.</footer>
+</div>
+
+<script>
+const POS_VI = {
+  noun: 'Danh từ', verb: 'Động từ', adjective: 'Tính từ', adverb: 'Trạng từ',
+  pronoun: 'Đại từ', preposition: 'Giới từ', conjunction: 'Liên từ',
+  interjection: 'Thán từ', determiner: 'Từ hạn định', exclamation: 'Thán từ',
+  numeral: 'Số từ', article: 'Mạo từ'
+};
+const POS_OPTIONS_POOL = ['Danh từ','Động từ','Tính từ','Trạng từ','Đại từ','Giới từ'];
+
+const $ = (sel) => document.querySelector(sel);
+const statusLine = $('#statusLine');
+const resultArea = $('#resultArea');
+const chipsEl = $('#chips');
+const historyCountEl = $('#historyCount');
+
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem('vocabHistory') || '[]'); }
+  catch(e){ return []; }
+}
+function saveHistory(list){
+  localStorage.setItem('vocabHistory', JSON.stringify(list));
+}
+function upsertHistory(entry){
+  const list = loadHistory().filter(e => e.word !== entry.word);
+  list.unshift(entry);
+  saveHistory(list.slice(0, 60)); // cap history size
+  renderChips();
+}
+function renderChips(){
+  const list = loadHistory();
+  historyCountEl.textContent = list.length;
+  chipsEl.innerHTML = '';
+  list.forEach(e => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.type = 'button';
+    b.textContent = e.word;
+    b.onclick = () => { $('#wordInput').value = e.word; renderEntry(e); };
+    chipsEl.appendChild(b);
+  });
+}
+
+async function fetchDictionary(word){
+  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+  if(!res.ok) throw new Error('not_found');
+  const data = await res.json();
+  return data[0];
+}
+
+async function fetchTranslation(word){
+  const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|vi`);
+  if(!res.ok) throw new Error('translate_failed');
+  const data = await res.json();
+  return data?.responseData?.translatedText || '';
+}
+
+function renderEntry(entry){
+  const posBlocks = entry.meanings.map(m => `
+    <div class="pos-block">
+      <span class="pos-tag">${m.posVi}</span>
+      <ul>
+        ${m.definitions.slice(0,2).map(d => `<li>${d}</li>`).join('')}
+      </ul>
+    </div>`).join('');
+
+  resultArea.innerHTML = `
+    <div class="entry-card">
+      <div class="entry-head">
+        <span class="headword">${entry.word}</span>
+        ${entry.phonetic ? `<span class="phonetic">${entry.phonetic}</span>` : ''}
+      </div>
+      <div class="translation">${entry.translation || '(không có bản dịch)'}</div>
+      ${posBlocks}
+    </div>`;
+}
+
+$('#lookupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const raw = $('#wordInput').value.trim().toLowerCase();
+  if(!raw) return;
+  const btn = $('#lookupBtn');
+  btn.disabled = true;
+  statusLine.className = 'status';
+  statusLine.textContent = `Đang tra "${raw}"...`;
+  resultArea.innerHTML = '';
+
+  try{
+    const [dictRaw, translation] = await Promise.all([
+      fetchDictionary(raw).catch(() => null),
+      fetchTranslation(raw).catch(() => '')
+    ]);
+
+    if(!dictRaw){
+      statusLine.className = 'status error';
+      statusLine.textContent = `Không tìm thấy "${raw}" trong từ điển. Kiểm tra chính tả hoặc thử một từ khác.`;
+      btn.disabled = false;
+      return;
+    }
+
+    // De-dupe part-of-speech blocks, cap 3 definitions per POS shown as 2
+    const seenPos = new Set();
+    const meanings = dictRaw.meanings
+      .filter(m => { if(seenPos.has(m.partOfSpeech)) return false; seenPos.add(m.partOfSpeech); return true; })
+      .map(m => ({
+        posVi: POS_VI[m.partOfSpeech] || m.partOfSpeech,
+        definitions: m.definitions.map(d => d.definition)
+      }));
+
+    const entry = {
+      word: dictRaw.word,
+      phonetic: dictRaw.phonetic || (dictRaw.phonetics.find(p => p.text)?.text) || '',
+      translation,
+      meanings,
+      ts: Date.now()
+    };
+
+    renderEntry(entry);
+    upsertHistory(entry);
+    statusLine.textContent = '';
+  } catch(err){
+    statusLine.className = 'status error';
+    statusLine.textContent = 'Có lỗi khi tra từ. Kiểm tra kết nối mạng và thử lại.';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---- Tabs ----
+$('#tabLookupBtn').addEventListener('click', () => switchTab('lookup'));
+$('#tabQuizBtn').addEventListener('click', () => switchTab('quiz'));
+function switchTab(name){
+  $('#tabLookupBtn').classList.toggle('active', name === 'lookup');
+  $('#tabQuizBtn').classList.toggle('active', name === 'quiz');
+  $('#panelLookup').classList.toggle('active', name === 'lookup');
+  $('#panelQuiz').classList.toggle('active', name === 'quiz');
+  if(name === 'quiz') buildQuizScreen();
+}
+
+// ---- Quiz ----
+function shuffle(arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildQuizScreen(){
+  const history = loadHistory();
+  const quizArea = $('#quizArea');
+  if(history.length < 4){
+    quizArea.innerHTML = `<div class="quiz-empty">Cần tra ít nhất <strong>4 từ khác nhau</strong> ở tab "Tra từ" trước đã. Hiện có ${history.length} từ.</div>`;
+    return;
+  }
+  quizArea.innerHTML = `
+    <div class="quiz-actions">
+      <button class="primary" id="genQuizBtn">Tạo 5 câu hỏi mới</button>
+      <span class="score" id="scoreLine"></span>
+    </div>
+    <div id="questionsWrap"></div>`;
+  $('#genQuizBtn').addEventListener('click', () => renderQuiz(history));
+  renderQuiz(history);
+}
+
+function makeQuestion(history, usedWords){
+  const pool = history.filter(w => !usedWords.has(w.word));
+  const source = pool.length ? pool : history;
+  const target = source[Math.floor(Math.random() * source.length)];
+  usedWords.add(target.word);
+
+  const kind = Math.random() < 0.5 ? 'translation' : 'pos';
+
+  if(kind === 'translation' && target.translation){
+    const distractors = shuffle(history.filter(w => w.word !== target.word && w.translation))
+      .slice(0, 3).map(w => w.translation);
+    if(distractors.length === 3){
+      return {
+        prompt: `Từ "${target.word}" có nghĩa tiếng Việt là gì?`,
+        eyebrow: 'Nghĩa của từ',
+        options: shuffle([target.translation, ...distractors]),
+        answer: target.translation
+      };
+    }
+  }
+
+  // fallback / pos question
+  const correctPos = target.meanings[0]?.posVi || 'Danh từ';
+  const distractorsPos = shuffle(POS_OPTIONS_POOL.filter(p => p !== correctPos)).slice(0, 3);
+  return {
+    prompt: `"${target.word}" thuộc từ loại nào?`,
+    eyebrow: 'Từ loại',
+    options: shuffle([correctPos, ...distractorsPos]),
+    answer: correctPos
+  };
+}
+
+let quizState = { total: 0, correct: 0 };
+
+function renderQuiz(history){
+  quizState = { total: 0, correct: 0 };
+  updateScoreLine();
+  const usedWords = new Set();
+  const questions = [];
+  for(let i = 0; i < 5; i++){
+    questions.push(makeQuestion(history, usedWords));
+  }
+  const wrap = $('#questionsWrap');
+  wrap.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.innerHTML = `
+      <div class="q-eyebrow">Câu ${idx+1} · ${q.eyebrow}</div>
+      <div class="q-prompt">${q.prompt}</div>
+      <div class="options">
+        ${q.options.map(opt => `<button type="button" class="option" data-answer="${encodeURIComponent(opt)}">${opt}</button>`).join('')}
+      </div>`;
+    wrap.appendChild(card);
+
+    card.querySelectorAll('.option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chosen = decodeURIComponent(btn.dataset.answer);
+        const options = card.querySelectorAll('.option');
+        options.forEach(o => o.disabled = true);
+        if(chosen === q.answer){
+          btn.classList.add('correct');
+          quizState.correct++;
+        } else {
+          btn.classList.add('wrong');
+          options.forEach(o => {
+            if(decodeURIComponent(o.dataset.answer) === q.answer) o.classList.add('correct');
+          });
+        }
+        quizState.total++;
+        updateScoreLine();
+      });
+    });
+  });
+}
+
+function updateScoreLine(){
+  $('#scoreLine').textContent = `Điểm: ${quizState.correct}/${quizState.total || 5}`;
+}
+
+// ---- init ----
+renderChips();
+</script>
+</body>
+</html>
